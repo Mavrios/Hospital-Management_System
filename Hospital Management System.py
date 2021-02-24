@@ -19,7 +19,7 @@ def Welcome():
 
 
 def AdminMode():
-    global root , AdminWindow , UserNameEntry , PasswordEntry , FirstLoginLabel ,FirstLoginLabel2 ,UserNameLabel ,PasswordLabel, SaveButton , LoginLabel , EnterButton
+    global root , AdminWindow , UserNameEntry , PasswordEntry , FirstLoginLabel ,FirstLoginLabel2 ,UserNameLabel ,PasswordLabel, SaveButton , LoginLabel , EnterButton , SecurityData
     AdminWindow = tkinter.Toplevel(root)
     AdminWindow.geometry("800x600+750+350")
     AdminWindow.title("Admin Mode")
@@ -77,12 +77,13 @@ def AdminMode():
 
 
 def SecurityAdminData():
-    # global UserNameEntry , PasswordEntry , AdminWindow
+    global UserNameEntry , PasswordEntry , AdminWindow , SecurityData
     AdminFile = open("Admin","w")
     Username = str(UserNameEntry.get())
     AdminFile.write(Username + "\n")
     AdminFile.write(PasswordEntry.get())
     AdminFile.close()
+    AdminFile = open("Admin","r")
     FirstLoginLabel.destroy()
     FirstLoginLabel2.destroy()
     UserNameLabel.destroy()
@@ -90,6 +91,10 @@ def SecurityAdminData():
     UserNameEntry.destroy()
     PasswordEntry.destroy()
     SaveButton.destroy()
+    SecurityData = AdminFile.readlines()
+    AdminFile.close()
+    AdminMenuDisplay()
+
     
 def AdminLoginChecker():
     global SecurityData , AdminWindow , Counter ,LoginLabel , EnterButton , TriesLabel
@@ -97,6 +102,16 @@ def AdminLoginChecker():
     if  (UserNameEntry.get() == (SecurityData[0]).rstrip())  and (PasswordEntry.get() == SecurityData[1]):
         print("True")
         # Function to Display Admin Options
+        LoginLabel.destroy()
+        UserNameLabel.destroy()
+        PasswordLabel.destroy()
+        UserNameEntry.destroy()
+        PasswordEntry.destroy()
+        EnterButton.destroy()
+        if Counter < 2 :
+            TriesLabel.destroy()
+        
+        AdminMenuDisplay()
     else:
         if Counter <= 0:
             LoginLabel.destroy()
@@ -114,6 +129,29 @@ def AdminLoginChecker():
             TriesLabel = tkinter.Label(AdminWindow , text= "Remaining Tries " + str(Counter)  ,  bg="white" ,fg = "red" , font= "Impact 24" )
             TriesLabel.grid(row = 2 , column= 2)
             Counter-=1
+
+
+def AdminMenuDisplay():
+    global photo , VarList
+    Label1 = tkinter.Label(AdminWindow,image = photo , width= 800 )
+    Label1.pack()
+    AdminLabel = tkinter.Label(AdminWindow , text= "Welcome to Admin Mode" , bg= "white" , fg = "red" , font= "Impact 24")
+    AdminLabel.pack()
+    VarList = tkinter.StringVar(AdminWindow)
+    VarList.set("Manage Patients")
+    Option = ('Manage Patients' , 'Manage Doctors' , 'Book an Appointment')
+    FeatureLabel = tkinter.Label(AdminWindow , text= "Please choose the feature:  " , bg= "white" , fg = "dodgerblue" , font= "Impact 18")
+    FeatureLabel.pack(side='left')
+    OptionMenu= tkinter.OptionMenu(AdminWindow , VarList , *Option ).pack(ipadx = 100 , ipady= 10, side = 'left')
+    ConfirmButton = tkinter.Button(AdminWindow , text = "Confirm" , bg= "dimgray" , fg= "dodgerblue" , font = "Impact 18")
+    ConfirmButton.pack(ipadx = 20 , side = 'left' )
+    # ManagePatientsButton = tkinter.Button(AdminWindow , text = "Manage Patients" , bg = "dimgray" , fg = "dodgerblue" , font = "Impact 24" )
+    # ManagePatientsButton.pack()
+    # ManageDoctorButton   = tkinter.Button(AdminWindow , text = "Manage Doctors" , bg = "dimgray" , fg = "dodgerblue" , font = "Impact 24" )
+    # ManageDoctorButton.pack()
+    # BookanAppointmentButton = tkinter.Button(AdminWindow , text = "Book an appointment" , bg = "dimgray" , fg = "dodgerblue" , font = "Impact 24" )
+    # BookanAppointmentButton.pack()
+
 
 
 
