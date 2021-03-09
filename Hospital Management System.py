@@ -1,11 +1,14 @@
 import tkinter
-from tkinter import font
-from tkinter.constants import CENTER, E, END, N, NE, W
+from tkinter import Text, font
+from tkinter.constants import CENTER, DISABLED, E, END, INSERT, N, NE, W
 from PIL import ImageTk, Image
 import json
 import ast
 import pygame
+from pygame.constants import TEXTINPUT
 
+
+flag = 0
 PatientDict = dict()
 SecurityData = list()
 Departments  = list()
@@ -13,6 +16,9 @@ DepartmentsStrip = list()
 DoctorName = list()
 ReservedID = list()
 ReservedIdstriped = list()
+DeletedPatientID = list()
+DeletedPatientIDstriped = list()
+
 IDFile = open("Reserved ID" , "r")
 ReservedID = IDFile.readlines()
 for i in ReservedID:
@@ -20,6 +26,15 @@ for i in ReservedID:
 
 IDFile.close()
 print(ReservedIdstriped)
+
+
+IDFile = open("Deleted ID" , "r")
+DeletedPatientID = IDFile.readlines()
+for i in DeletedPatientID:
+    DeletedPatientIDstriped.append(i.rstrip())
+
+IDFile.close()
+print(DeletedPatientIDstriped)
 
 DepartmentsFile = open("Departments.cfg" , "r")
 Departments = DepartmentsFile.readlines()
@@ -53,7 +68,9 @@ def play():
 def PopUpMsg(MSG):
     play()
     PopUp = tkinter.Tk()
+    PopUp.title("Alert")
     PopUp.geometry("+1050+650")
+    PopUp.iconbitmap(r"Icon.ico")
     # PopUp.wm_title("Error")
     MessageLabel = tkinter.Label(PopUp, text = MSG , fg="dodgerblue" , font = "Impact 12")
     MessageLabel.pack(side= "top" , fill= "x" , pady= 10)
@@ -219,7 +236,7 @@ def ConfirmFeature():
 
 
 def ManagePatients():
-    global AdminWindow  , PatientPhoto , PatientsWindow
+    global AdminWindow  , PatientPhoto , PatientsWindow 
     PatientsWindow = tkinter.Toplevel(AdminWindow)
     PatientsWindow.geometry("800x600+750+350")
     PatientsWindow.title("Manage Patients")
@@ -236,15 +253,15 @@ def ManagePatients():
     AddButton.pack()
     FreeLabel = tkinter.Label(PatientsWindow , text = "\n" , bg = "white")
     FreeLabel.pack()
-    EditButton = tkinter.Button(PatientsWindow , text = "Edit Patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 )
+    EditButton = tkinter.Button(PatientsWindow , text = "Edit Patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30, command= EditPatient )
     EditButton.pack()
     FreeLabel = tkinter.Label(PatientsWindow , text = "\n" , bg = "white")
     FreeLabel.pack()
-    DelButton = tkinter.Button(PatientsWindow , text = "Delete Patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 )
+    DelButton = tkinter.Button(PatientsWindow , text = "Delete Patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 , command= DeletePatient)
     DelButton.pack()
     FreeLabel = tkinter.Label(PatientsWindow , text = "\n" , bg = "white")
     FreeLabel.pack()
-    DisplayButton = tkinter.Button(PatientsWindow , text = "Display a patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 )
+    DisplayButton = tkinter.Button(PatientsWindow , text = "Display a patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 ,command = ViewPatientData)
     DisplayButton.pack()
 
 
@@ -336,18 +353,50 @@ def RefreshDoctor():
         DoctorMenu = tkinter.OptionMenu(AddPatientWindow , DoctorVar ,*DoctorName)
         DoctorMenu.place(relx=0.23 , rely = 0.15 , anchor= W , width= 300 , height= 30)
 
+def EditRefreshDoctor():
+    global EditDoctorMenu , AddPatientWindow , EditDoctorVar
+    if 'Doctor' not in Database[EditDepartmentVar.get()]:
+        DoctorName.clear()
+        DoctorName.append("There's no available Doctors")
+        EditDoctorMenu.destroy()
+        EditDoctorVar.set("There's no available Doctors")
+        EditDoctorMenu = tkinter.OptionMenu(EditPatientWindow , EditDoctorVar ,*DoctorName)
+        EditDoctorMenu.place(relx=0.23 , rely = 0.15 , anchor= W , width= 300 , height= 30)
+    else:
+        DoctorName.clear()
+        for i in Database[EditDepartmentVar.get()]['Doctor']:
+            DoctorName.append("Dr. " + i["Name"])
+        EditDoctorMenu.destroy()
+        EditDoctorVar.set(DoctorName[0])
+        EditDoctorMenu = tkinter.OptionMenu(EditPatientWindow , EditDoctorVar ,*DoctorName)
+        EditDoctorMenu.place(relx=0.23 , rely = 0.15 , anchor= W , width= 300 , height= 30)
+
 
 def ReviewPatientData():
-    global NameEntry , DoctorVar , AgeSpinbox , AddressEntry , GenderVar, PhoneEntry,IDSpinBox,IDFile,RoomSpinBox,DatabaseFile , AddPatientWindow
+    global DeletedPatientID,DeletedPatientIDstriped ,NameEntry , DoctorVar , AgeSpinbox , AddressEntry , GenderVar, PhoneEntry,IDSpinBox,IDFile,RoomSpinBox,DatabaseFile , AddPatientWindow,DepartmentVar,IDFile,DeletedPatientID,DeletedPatientIDstriped
     # print(AgeSpinbox.get())
     PatientName =""
     PatientName=NameEntry.get()
     PhoneNumber =""
     PhoneNumber=PhoneEntry.get()
     # print(PatientName)
+
+    IDFile = open("Deleted ID" , "r")
+    DeletedPatientID = IDFile.readlines()
+    for i in DeletedPatientID:
+        DeletedPatientIDstriped.append(i.rstrip())
+    IDFile.close()
+
+    IDFile = open("Deleted ID" , "r")
+    DeletedPatientID = IDFile.readlines()
+    for i in DeletedPatientID:
+        DeletedPatientIDstriped.append(i.rstrip())
+
+    IDFile.close()
+
     if DoctorVar.get() == "Press Refresh After Choosing Department" or DoctorVar.get() == "There's no available Doctors" :
         PopUpMsg("Please choose Doctor")
-    elif PatientName == "" or PatientName.isspace() or not PatientName.isalpha() :
+    elif PatientName == "" or PatientName.isspace() or PatientName.isnumeric() :
         PopUpMsg("Please enter correct patient name")
     elif int(AgeSpinbox.get()) > 150 or int(AgeSpinbox.get()) <= 0  :
         PopUpMsg("Please enter correct age")
@@ -357,14 +406,15 @@ def ReviewPatientData():
         PopUpMsg("Please enter patient address")
     elif  not PhoneNumber.isnumeric() :
         PopUpMsg("Please enter correct phone number")
-    elif IDSpinBox.get() in  ReservedIdstriped:
+    elif IDSpinBox.get() in  ReservedIdstriped or IDSpinBox.get() in DeletedPatientIDstriped:
         PopUpMsg("This ID is already exist")
     
     else:
         IDFile = open("Reserved ID" ,"a")
         IDFile.write("\n"+IDSpinBox.get())
         PatientDict["ID"] = IDSpinBox.get()
-        PatientDict["Doctor"] = DoctorVar.get()
+        PatientDict["Department"] = DepartmentVar.get()
+        PatientDict["Supervisor Doctor"] = DoctorVar.get()
         PatientDict["Name"] = PatientName
         PatientDict["Age"] = AgeSpinbox.get()
         PatientDict["Gender"] = GenderVar.get()
@@ -376,11 +426,282 @@ def ReviewPatientData():
         Database[DepartmentVar.get()]['Patients'].append(PatientDict)
         # print(Database)
         DatabaseFile.write(json.dumps(Database))
+        DatabaseFile.close()
         AddPatientWindow.destroy()
         PopUpMsg("Patient Data has been saved")
         
 
+def EditPatient():
+    global PatientPhoto , IDlabel , IDEntry , NextButton , Label1 , EditPatientWindow 
+    EditPatientWindow = tkinter.Toplevel(PatientsWindow)
+    EditPatientWindow.geometry("700x500+800+400")
+    EditPatientWindow.title("Edit Patient")
+    EditPatientWindow.iconbitmap(r"Icon.ico")
+    EditPatientWindow.configure(background="white")
+    Label1 = tkinter.Label(EditPatientWindow,image = PatientPhoto , width= 800 )
+    Label1.place(relx=0.5,anchor=N )
+    IDlabel = tkinter.Label(EditPatientWindow , text= "Enter Patient ID" , bg="white" , fg = "dodgerblue" ,font="Impact 18")
+    IDlabel.place(relx=0.01,rely=0.5,anchor=W)
+    IDEntry = tkinter.Entry(EditPatientWindow , bg="dimgray" , fg="dodgerblue" , font = "Impact 18")
+    IDEntry.place(relx=0.3,rely=0.5,anchor=W , width= 300 , height= 30)
+    NextButton = tkinter.Button(EditPatientWindow , text = "NEXT" , bg="dimgray" , fg="dodgerblue" , font = "Impact 16", command= EditPatientID)
+    NextButton.place(relx= 0.75, rely= 0.5 , anchor=W , width= 100)
+    
+def EditPatientID():
+    global IDlabel , IDEntry , NextButton , Label1 , EditPatientWindow , PatientDict , IDFile,Department , Index ,PatientDataDict , PatientInfoWindow
+    global EditNameEntry , EditDoctorVar , EditAgeSpinbox , EditAddressEntry , EditGenderVar, EditPhoneEntry,EditRoomSpinBox,DatabaseFile ,EditPatientWindow,EditDepartmentVar , EditDescribeText , EditDoctorMenu
 
+    IDFile = open("Reserved ID" , "r")
+    ReservedID = IDFile.readlines()
+    ReservedIdstriped.clear()
+    for i in ReservedID:
+        ReservedIdstriped.append(i.rstrip())
+
+    IDFile.close()
+    # print(ReservedIdstriped)
+
+    if IDEntry.get() not in ReservedIdstriped or IDEntry.get() in DeletedPatientIDstriped :
+        PopUpMsg("Invalid Patient ID")
+
+    else:
+        PatientInfoWindow = tkinter.Tk()
+        PatientInfoWindow.geometry("+150+300")
+        PatientInfoWindow.iconbitmap(r"Icon.ico")
+        PatientInfoWindow.title("Patient Information")
+        flag = 0
+        Index = -1
+        for i in Database.values():
+            if flag == 1:
+                break
+            for n in i['Patients']:
+                Index+=1
+                print("\n\n")
+                if IDEntry.get() == n['ID']:
+                    PatientDataDict = n
+                    print(PatientDataDict)
+                    print(Index)
+                    flag = 1
+                    break
+
+        PatientInfo = tkinter.Label(PatientInfoWindow,text = PatientDataDict ,bg="white" , fg ="red" , font = "Impact 15")
+        PatientInfo.pack()
+
+
+        IDlabel.destroy()
+        IDEntry.destroy()
+        NextButton.destroy()
+        Label1.destroy()
+        EditDepartmentLabel = tkinter.Label(EditPatientWindow , text = "Department: " , bg= "white" , fg = "dodgerblue" , font= "Impact 18")
+        EditDepartmentLabel.place(relx=0.01 , rely = 0.05 , anchor= W)
+        EditDepartmentVar = tkinter.StringVar(EditPatientWindow)
+        EditDepartmentVar.set(PatientDataDict['Department'])
+        EditDepartmentMenu= tkinter.OptionMenu(EditPatientWindow , EditDepartmentVar , *DepartmentsStrip )
+        EditDepartmentMenu.place(relx=0.23 , rely = 0.05 , anchor= W , width= 300 , height= 30)
+        EditDoctorLabel = tkinter.Label(EditPatientWindow , text = "Doctor:" , bg = "white" , fg ="dodgerblue" , font = "Impact 18")
+        EditDoctorLabel.place(relx=0.01 , rely=0.15 ,anchor= W  )
+        EditDoctorVar = tkinter.StringVar(EditPatientWindow)
+        EditDoctorVar.set(PatientDataDict['Supervisor Doctor'])
+        EditDoctorMenu = tkinter.OptionMenu(EditPatientWindow , EditDoctorVar ,*DoctorName)
+        EditDoctorMenu.place(relx=0.23 , rely = 0.15 , anchor= W , width= 300 , height= 30)
+        EditRefreshButton = tkinter.Button(EditPatientWindow , text="Refresh" , bg="dimgray" ,fg = "dodgerblue" , font = "Impact 12" , command= EditRefreshDoctor)
+        EditRefreshButton.place(relx=0.75 , rely = 0.15 , anchor= E )
+        EditNameLabel = tkinter.Label(EditPatientWindow ,text = "Patient Name: " , bg = "white" , fg ="dodgerblue" , font = "Impact 18")
+        EditNameLabel.place(relx=0.01 , rely= 0.25 , anchor= W)
+        EditNameEntry = tkinter.Entry(EditPatientWindow , bg= "lightgrey"  , font= "Impact 18",fg= "dodgerblue" ,width= 25 )
+        EditNameEntry.place(relx=0.23 , rely = 0.25 , anchor= W , width= 300 , height= 30)
+        EditAgeLabel = tkinter.Label(EditPatientWindow , text = "Age:" , bg= "White" , fg="dodgerblue" , font= "Impact 18" )
+        EditAgeLabel.place(relx=0.01 , rely = 0.35 , anchor= W)
+        EditAgeSpinbox = tkinter.Spinbox(EditPatientWindow , from_=  1 , to = 150 , bg ="lightgray" , fg= "dodgerblue" , font = "Impact 12")
+        EditAgeSpinbox.place(relx=0.23 , rely= 0.35 , anchor= W , width=300 , height= 30)
+        EditYearsLabel = tkinter.Label(EditPatientWindow , text= "Years" , bg="white" , fg="dodgerblue" , font="Impact 18")        
+        EditYearsLabel.place(relx=0.67 , rely= 0.35 , anchor=W)
+        EditGenderLabel = tkinter.Label(EditPatientWindow , text= "Gender:" ,bg="White" , fg= "dodgerblue" , font= "Impact 18")
+        EditGenderLabel.place(relx=0.01 , rely= 0.45 , anchor=W)
+        EditGenderVar = tkinter.StringVar(EditPatientWindow)
+        EditGenderVar.set(PatientDataDict['Gender'])
+        EditGenderMaleRadioButton = tkinter.Radiobutton(EditPatientWindow , text= "Male" , variable = EditGenderVar , value= "Male" ,bg="White" , fg ="dodgerblue" , font = "Impact 12")
+        EditGenderMaleRadioButton.place(relx=0.23 , rely= 0.45 , anchor=W)
+        EditGenderFemaleRadioButton = tkinter.Radiobutton(EditPatientWindow , text= "Female" , variable = EditGenderVar , value= "Female" ,bg="White" , fg ="dodgerblue" , font = "Impact 12")
+        EditGenderFemaleRadioButton.place(relx=0.43 , rely= 0.45 , anchor=W)
+        EditAddressLabel = tkinter.Label(EditPatientWindow , text = "Address:" , bg = "White" , fg = "dodgerblue" , font= "Impact 18")
+        EditAddressLabel.place(relx = 0.01 , rely=0.55 , anchor= W)
+        EditAddressEntry = tkinter.Entry(EditPatientWindow , bg= "lightgrey"  , font= "Impact 18",fg= "dodgerblue" ,width= 25 )
+        EditAddressEntry.place(relx=0.23 , rely = 0.55 , anchor= W , width= 300 , height= 30)
+        EditPhoneLabel = tkinter.Label(EditPatientWindow , text = "Phone Number:" , bg = "White" , fg = "dodgerblue" , font= "Impact 18")
+        EditPhoneLabel.place(relx=0.01 , rely = 0.65 , anchor= W)
+        EditPhoneEntry = tkinter.Entry(EditPatientWindow , bg= "lightgrey"  , font= "Impact 18",fg= "dodgerblue" ,width= 25 )
+        EditPhoneEntry.place(relx=0.23 , rely = 0.65 , anchor= W , width= 300 , height= 30)
+        EditRoomLabel = tkinter.Label(EditPatientWindow , text = "Room Number:" , bg = "White" , fg = "dodgerblue" , font= "Impact 18")
+        EditRoomLabel.place(relx=0.01 , rely = 0.75 , anchor= W)
+        EditRoomSpinBox = tkinter.Spinbox(EditPatientWindow , from_=  1000 , to = 10000 , bg ="lightgray" , fg= "dodgerblue" , font = "Impact 12")
+        EditRoomSpinBox.place(relx=0.23 , rely = 0.75 , anchor= W , width= 300 , height= 30)
+        EditDescribeLabel = tkinter.Label(EditPatientWindow , text = "Describtion:" , bg = "White" , fg = "dodgerblue" , font= "Impact 18")
+        EditDescribeLabel.place(relx = 0.01 , rely= 0.85 , anchor= W)
+        EditDescribeText = tkinter.Text(EditPatientWindow , bg= "lightgrey"  , font= "Impact 12",fg= "dodgerblue" ,width= 25)
+        EditDescribeText.place(relx=0.23 , rely = 0.85 , anchor= W , width= 300 , height= 30)
+        EditPatientEnterButton = tkinter.Button(EditPatientWindow , text= "Enter" , bg ="dimgray" ,fg="dodgerblue" , font = "Impact 18" , command= EditPatientData)
+        EditPatientEnterButton.place(relx= 0.8 , rely= 0.9, anchor=W)
+
+def EditPatientData():
+    global EditNameEntry , EditDoctorVar , EditAgeSpinbox , EditAddressEntry , EditGenderVar, EditPhoneEntry,EditRoomSpinBox,DatabaseFile ,EditPatientWindow,EditDepartmentVar ,EditDescribeText ,Index , PatientInfoWindow
+
+    PatientName = ""
+    PatientName=EditNameEntry.get()
+    PhoneNumber = ""
+    PhoneNumber=EditPhoneEntry.get()
+
+    if EditDoctorVar.get() == "Press Refresh After Choosing Department" or EditDoctorVar.get() == "There's no available Doctors" :
+        PopUpMsg("Please choose Doctor")
+    elif PatientName == "" or PatientName.isspace() or  PatientName.isnumeric():
+        PopUpMsg("Please enter correct patient name")
+    elif int(EditAgeSpinbox.get()) > 150 or int(EditAgeSpinbox.get()) <= 0  :
+        PopUpMsg("Please enter correct age")
+    elif EditGenderVar.get() == "No Gender" :
+        PopUpMsg("Please enter patient gender")
+    elif EditAddressEntry.get() == "":
+        PopUpMsg("Please enter patient address")
+    elif  not PhoneNumber.isnumeric() :
+        PopUpMsg("Please enter correct phone number")
+    
+    else:
+        PatientDict["ID"] = PatientDataDict['ID']
+        PatientDict["Department"] = EditDepartmentVar.get()
+        PatientDict["Supervisor Doctor"] = EditDoctorVar.get()
+        PatientDict["Name"] = PatientName
+        PatientDict["Age"] = EditAgeSpinbox.get()
+        PatientDict["Gender"] = EditGenderVar.get()
+        PatientDict["Address"] = EditAddressEntry.get()
+        PatientDict["Phone Number"] = PhoneNumber
+        PatientDict["Room Number"] = EditRoomSpinBox.get()
+        PatientDict["Describtion"] = EditDescribeText.get("1.0",END).rstrip()
+        DatabaseFile = open("Database" , "w")
+        Database[EditDepartmentVar.get()]['Patients'][Index] = PatientDict
+        # print(Database)
+        DatabaseFile.write(json.dumps(Database))
+        EditPatientWindow.destroy()
+        PatientInfoWindow.destroy()
+        PopUpMsg("Patient Data has been saved")
+        
+def DeletePatient():
+    global DelIDEntry ,DelPatientWindow
+    DelPatientWindow = tkinter.Toplevel(PatientsWindow)
+    DelPatientWindow.geometry("700x500+800+400")
+    DelPatientWindow.title("Edit Patient")
+    DelPatientWindow.iconbitmap(r"Icon.ico")
+    DelPatientWindow.configure(background="white")
+    Label1 = tkinter.Label(DelPatientWindow,image = PatientPhoto , width= 800 )
+    Label1.place(relx=0.5,anchor=N )
+    IDlabel = tkinter.Label(DelPatientWindow , text= "Enter Patient ID" , bg="white" , fg = "dodgerblue" ,font="Impact 18")
+    IDlabel.place(relx=0.01,rely=0.5,anchor=W)
+    DelIDEntry = tkinter.Entry(DelPatientWindow , bg="dimgray" , fg="dodgerblue" , font = "Impact 18")
+    DelIDEntry.place(relx=0.3,rely=0.5,anchor=W , width= 300 , height= 30)
+    NextButton = tkinter.Button(DelPatientWindow , text = "Confirm" , bg="dimgray" , fg="dodgerblue" , font = "Impact 16", command= DelPatientDict)
+    NextButton.place(relx= 0.75, rely= 0.5 , anchor=W , width= 100)
+
+
+def DelPatientDict():
+    global IDFile,ReservedID,ReservedIdstriped,DelIDEntry,flag,Index,Database,Key,DatabaseFile ,DelPatientWindow,DeletedPatientID,DeletedPatientIDstriped
+    Key = ""
+    IDFile = open("Reserved ID" , "r")
+    ReservedID = IDFile.readlines()
+    ReservedIdstriped.clear()
+    for i in ReservedID:
+        ReservedIdstriped.append(i.rstrip())
+
+    IDFile.close()
+
+    IDFile = open("Deleted ID" , "r")
+    DeletedPatientID = IDFile.readlines()
+    for i in DeletedPatientID:
+        DeletedPatientIDstriped.append(i.rstrip())
+
+    IDFile.close()
+
+    if DelIDEntry.get() not in ReservedIdstriped or DelIDEntry.get() in DeletedPatientIDstriped :
+        PopUpMsg("Invalid Patient ID")
+
+    else:
+        flag = 0
+        Index = -1
+        for i in Database.values():
+            if flag == 1:
+                break
+            for n in i['Patients']:
+                Index+=1
+                print("\n\n")
+                if DelIDEntry.get() == n['ID']:
+                    flag = 1
+                    Key = n['Department']
+                    print(Key)
+                    break
+
+        Database[Key]['Patients'].pop(Index)               
+        ReservedIdstriped.remove(DelIDEntry.get())
+        IDFile = open("Reserved ID" , "w")
+        for i in ReservedIdstriped:
+            IDFile.write(i+"\n")
+        IDFile.close()
+        IDFile = open("Deleted ID","a")
+        IDFile.write("\n" + DelIDEntry.get())
+        IDFile.close()
+        DatabaseFile = open("Database" , "w")
+        DatabaseFile.write(json.dumps(Database))
+        DatabaseFile.close()
+        DelPatientWindow.destroy()
+        PopUpMsg("Patient has been successfully deleted")
+
+def ViewPatientData():
+    global ViewIDEntry,ViewPatientWindow
+    ViewPatientWindow = tkinter.Toplevel(PatientsWindow)
+    ViewPatientWindow.geometry("700x500+800+400")
+    ViewPatientWindow.title("Edit Patient")
+    ViewPatientWindow.iconbitmap(r"Icon.ico")
+    ViewPatientWindow.configure(background="white")
+    Label1 = tkinter.Label(ViewPatientWindow,image = PatientPhoto , width= 800 )
+    Label1.place(relx=0.5,anchor=N )
+    ViewIDlabel = tkinter.Label(ViewPatientWindow , text= "Enter Patient ID" , bg="white" , fg = "dodgerblue" ,font="Impact 18")
+    ViewIDlabel.place(relx=0.01,rely=0.5,anchor=W)
+    ViewIDEntry = tkinter.Entry(ViewPatientWindow , bg="dimgray" , fg="dodgerblue" , font = "Impact 18")
+    ViewIDEntry.place(relx=0.3,rely=0.5,anchor=W , width= 300 , height= 30)
+    ViewNextButton = tkinter.Button(ViewPatientWindow , text = "NEXT" , bg="dimgray" , fg="dodgerblue" , font = "Impact 16", command= PatientData)
+    ViewNextButton.place(relx= 0.75, rely= 0.5 , anchor=W , width= 100)
+
+def PatientData():
+    global IDFile , ReservedID , ReservedIdstriped ,ViewIDEntry,ViewPatientWindow
+    IDFile = open("Reserved ID" , "r")
+    ReservedID = IDFile.readlines()
+    ReservedIdstriped.clear()
+    for i in ReservedID:
+        ReservedIdstriped.append(i.rstrip())
+
+    IDFile.close()
+    # print(ReservedIdstriped)
+
+    if ViewIDEntry.get() not in ReservedIdstriped or ViewIDEntry.get() in DeletedPatientIDstriped :
+        PopUpMsg("Invalid Patient ID")
+
+    else:
+        PatientInfoWindow = tkinter.Tk()
+        PatientInfoWindow.geometry("+150+290")
+        PatientInfoWindow.iconbitmap(r"Icon.ico")
+        PatientInfoWindow.title("Patient Information")
+        flag = 0
+        Index = -1
+        for i in Database.values():
+            if flag == 1:
+                break
+            for n in i['Patients']:
+                Index+=1
+                print("\n\n")
+                if ViewIDEntry.get() == n['ID']:
+                    PatientDataDict = n
+                    print(PatientDataDict)
+                    flag = 1
+                    break
+
+        PatientInfo = tkinter.Label(PatientInfoWindow,text = PatientDataDict ,bg="white" , fg ="red" , font = "Impact 15")
+        PatientInfo.pack()
+        ViewPatientWindow.destroy()           
 
 
 
