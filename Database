@@ -1,2 +1,1 @@
-{"Anesthetics": {"Doctor": [{"ID": 1 , "Name":"Kishk" , "address":"Mansoura" , "Phone Number" : "01000912938"  } , {"ID" : 2 , "Name":"Ahmed" , "address":"Mansoura" , "Phone Number" : "01000912938" }]} , "Breast Screening":{} , 
-"Cardiology" : {} }
+{"Anesthetics": {"Doctor": [{"ID": 1, "Name": "Kishk", "address": "Mansoura", "Phone Number": "01000912938"}, {"ID": 2, "Name": "Ahmed", "address": "Mansoura", "Phone Number": "01000912938"}], "Patients": [{"ID": "3", "Doctor": "Dr. Kishk", "Name": "Ahmed", "Age": "23", "Gender": "Male", "Address": "Mansoura", "Phone Number": "01000912938", "Room Number": "1001", "Describtion": "Cought and flu"}]}, "Breast Screening": {}, "Cardiology": {}}

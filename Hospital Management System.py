@@ -1,17 +1,32 @@
 import tkinter
 from tkinter import font
-from tkinter.constants import CENTER, E, N, NE, W
+from tkinter.constants import CENTER, E, END, N, NE, W
 from PIL import ImageTk, Image
 import json
 import ast
+import pygame
+
+PatientDict = dict()
 SecurityData = list()
 Departments  = list()
 DepartmentsStrip = list()
 DoctorName = list()
+ReservedID = list()
+ReservedIdstriped = list()
+IDFile = open("Reserved ID" , "r")
+ReservedID = IDFile.readlines()
+for i in ReservedID:
+    ReservedIdstriped.append(i.rstrip())
+
+IDFile.close()
+print(ReservedIdstriped)
+
 DepartmentsFile = open("Departments.cfg" , "r")
 Departments = DepartmentsFile.readlines()
 for i in Departments:
     DepartmentsStrip.append(i.rstrip())
+
+
 
 print(DepartmentsStrip)
 AdminFile = open("Admin" , "r")
@@ -27,6 +42,23 @@ print(Database)
 for i in Database['Anesthetics']['Doctor']:
     DoctorName.append("Dr. " + i["Name"])
 
+DatabaseFile.close()
+pygame.mixer.init()
+
+
+def play():
+    pygame.mixer.music.load("audio/ErrorSound.mp3")
+    pygame.mixer.music.play(loops=0)
+
+def PopUpMsg(MSG):
+    play()
+    PopUp = tkinter.Tk()
+    PopUp.geometry("+1050+650")
+    # PopUp.wm_title("Error")
+    MessageLabel = tkinter.Label(PopUp, text = MSG , fg="dodgerblue" , font = "Impact 12")
+    MessageLabel.pack(side= "top" , fill= "x" , pady= 10)
+    B1 = tkinter.Button(PopUp, text= "OK" , bg ="dimgray" ,fg ="dodgerblue" , command=PopUp.destroy ,width=5 )
+    B1.pack()
 
 def Welcome():
     global Label1, Label2, Button1
@@ -217,7 +249,7 @@ def ManagePatients():
 
 
 def AddPatient():
-    global PatientsWindow , DoctorVar , DoctorName , DepartmentVar, GenderVar , DoctorMenu , AddPatientWindow
+    global AddPatientWindow , PatientsWindow , DoctorVar , DoctorName , DepartmentVar, GenderVar , DoctorMenu , AddPatientWindow , NameEntry , AgeSpinbox , GenderVar , AddressEntry, PhoneEntry, IDSpinBox , RoomSpinBox , DescribeText
     AddPatientWindow = tkinter.Toplevel(PatientsWindow)
     AddPatientWindow.geometry("700x500+800+400")
     AddPatientWindow.title("Add Patient")
@@ -282,7 +314,7 @@ def AddPatient():
     IDLabel.place(relx=0.01 , rely = 0.95 , anchor= W )
     IDSpinBox = tkinter.Spinbox(AddPatientWindow , from_=  1 , to = 10000 , bg ="lightgray" , fg= "dodgerblue" , font = "Impact 12")
     IDSpinBox.place(relx=0.23 , rely = 0.95 , anchor= W , width= 300 , height= 30)
-    PatientEnterButton = tkinter.Button(AddPatientWindow , text= "Enter" , bg ="dimgray" ,fg="dodgerblue" , font = "Impact 18")
+    PatientEnterButton = tkinter.Button(AddPatientWindow , text= "Enter" , bg ="dimgray" ,fg="dodgerblue" , font = "Impact 18" , command= ReviewPatientData)
     PatientEnterButton.place(relx= 0.8 , rely= 0.9, anchor=W)
 
 
@@ -303,6 +335,53 @@ def RefreshDoctor():
         DoctorVar.set(DoctorName[0])
         DoctorMenu = tkinter.OptionMenu(AddPatientWindow , DoctorVar ,*DoctorName)
         DoctorMenu.place(relx=0.23 , rely = 0.15 , anchor= W , width= 300 , height= 30)
+
+
+def ReviewPatientData():
+    global NameEntry , DoctorVar , AgeSpinbox , AddressEntry , GenderVar, PhoneEntry,IDSpinBox,IDFile,RoomSpinBox,DatabaseFile , AddPatientWindow
+    # print(AgeSpinbox.get())
+    PatientName =""
+    PatientName=NameEntry.get()
+    PhoneNumber =""
+    PhoneNumber=PhoneEntry.get()
+    # print(PatientName)
+    if DoctorVar.get() == "Press Refresh After Choosing Department" or DoctorVar.get() == "There's no available Doctors" :
+        PopUpMsg("Please choose Doctor")
+    elif PatientName == "" or PatientName.isspace() or not PatientName.isalpha() :
+        PopUpMsg("Please enter correct patient name")
+    elif int(AgeSpinbox.get()) > 150 or int(AgeSpinbox.get()) <= 0  :
+        PopUpMsg("Please enter correct age")
+    elif GenderVar.get() == "No Gender" :
+        PopUpMsg("Please enter patient gender")
+    elif AddressEntry.get() == "":
+        PopUpMsg("Please enter patient address")
+    elif  not PhoneNumber.isnumeric() :
+        PopUpMsg("Please enter correct phone number")
+    elif IDSpinBox.get() in  ReservedIdstriped:
+        PopUpMsg("This ID is already exist")
+    
+    else:
+        IDFile = open("Reserved ID" ,"a")
+        IDFile.write("\n"+IDSpinBox.get())
+        PatientDict["ID"] = IDSpinBox.get()
+        PatientDict["Doctor"] = DoctorVar.get()
+        PatientDict["Name"] = PatientName
+        PatientDict["Age"] = AgeSpinbox.get()
+        PatientDict["Gender"] = GenderVar.get()
+        PatientDict["Address"] = AddressEntry.get()
+        PatientDict["Phone Number"] = PhoneNumber
+        PatientDict["Room Number"] = RoomSpinBox.get()
+        PatientDict["Describtion"] = DescribeText.get("1.0",END).rstrip()
+        DatabaseFile = open("Database" , "w")
+        Database[DepartmentVar.get()]['Patients'].append(PatientDict)
+        # print(Database)
+        DatabaseFile.write(json.dumps(Database))
+        AddPatientWindow.destroy()
+        PopUpMsg("Patient Data has been saved")
+        
+
+
+
 
 
 root = tkinter.Tk()
