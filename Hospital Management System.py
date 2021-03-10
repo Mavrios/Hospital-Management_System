@@ -233,7 +233,8 @@ def ConfirmFeature():
     print(AdminChoice)
     if AdminChoice == 'Manage Patients':
         ManagePatients()
-
+    elif AdminChoice == 'Manage Doctors':
+        ManageDoctors()
 
 def ManagePatients():
     global AdminWindow  , PatientPhoto , PatientsWindow 
@@ -665,6 +666,24 @@ def ViewPatientData():
     ViewIDEntry.place(relx=0.3,rely=0.5,anchor=W , width= 300 , height= 30)
     ViewNextButton = tkinter.Button(ViewPatientWindow , text = "NEXT" , bg="dimgray" , fg="dodgerblue" , font = "Impact 16", command= PatientData)
     ViewNextButton.place(relx= 0.75, rely= 0.5 , anchor=W , width= 100)
+    ViewAllPatientButton = tkinter.Button(ViewPatientWindow , text="View All Patient" , bg ="dimgray" ,fg="dodgerblue" ,font = "impact 16", command = ViewAllPatientData)
+    ViewAllPatientButton.place(relx = 0.3 , rely= 0.8 , anchor= W , width= 300 )
+
+
+def ViewAllPatientData():
+    global ViewPatientWindow
+    ViewPatientWindow.destroy()    
+    PatientInfoWindow = tkinter.Tk()
+    PatientInfoWindow.geometry("+150+290")
+    PatientInfoWindow.iconbitmap(r"Icon.ico")
+    PatientInfoWindow.title("Patient Information")
+    flag = 0
+    for i in Database.values():
+        for n in i['Patients']:
+            PatientDataDict = n
+            PatientInfo = tkinter.Label(PatientInfoWindow,text = PatientDataDict ,bg="white" , fg ="red" , font = "Impact 15")
+            PatientInfo.pack(pady=10)
+  
 
 def PatientData():
     global IDFile , ReservedID , ReservedIdstriped ,ViewIDEntry,ViewPatientWindow
@@ -692,7 +711,6 @@ def PatientData():
                 break
             for n in i['Patients']:
                 Index+=1
-                print("\n\n")
                 if ViewIDEntry.get() == n['ID']:
                     PatientDataDict = n
                     print(PatientDataDict)
@@ -702,6 +720,49 @@ def PatientData():
         PatientInfo = tkinter.Label(PatientInfoWindow,text = PatientDataDict ,bg="white" , fg ="red" , font = "Impact 15")
         PatientInfo.pack()
         ViewPatientWindow.destroy()           
+
+
+
+
+
+
+
+
+
+
+
+def ManageDoctors():
+    global AdminWindow  , PatientPhoto , PatientsWindow 
+    
+"""     PatientsWindow = tkinter.Toplevel(AdminWindow)
+    PatientsWindow.geometry("800x600+750+350")
+    PatientsWindow.title("Manage Patients")
+    PatientsWindow.iconbitmap(r"Icon.ico")
+    PatientsWindow.configure(background="white")
+    Patient_Pic = Image.open("ManagePatient.jpg")
+    resize = Patient_Pic.resize((800,150), Image.ANTIALIAS)
+    PatientPhoto = ImageTk.PhotoImage(resize)
+    Label1 = tkinter.Label(PatientsWindow,image = PatientPhoto , width= 800 )
+    Label1.pack()
+    ManagePatientLabel = tkinter.Label(PatientsWindow, text = "Manage Patients\n" ,bg ="White" , fg="red" , font = "Impact 24 ")
+    ManagePatientLabel.pack()
+    AddButton = tkinter.Button(PatientsWindow , text = "Add Patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 , command= AddPatient )
+    AddButton.pack()
+    FreeLabel = tkinter.Label(PatientsWindow , text = "\n" , bg = "white")
+    FreeLabel.pack()
+    EditButton = tkinter.Button(PatientsWindow , text = "Edit Patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30, command= EditPatient )
+    EditButton.pack()
+    FreeLabel = tkinter.Label(PatientsWindow , text = "\n" , bg = "white")
+    FreeLabel.pack()
+    DelButton = tkinter.Button(PatientsWindow , text = "Delete Patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 , command= DeletePatient)
+    DelButton.pack()
+    FreeLabel = tkinter.Label(PatientsWindow , text = "\n" , bg = "white")
+    FreeLabel.pack()
+    DisplayButton = tkinter.Button(PatientsWindow , text = "Display a patient" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 ,command = ViewPatientData)
+    DisplayButton.pack()
+ """
+
+
 
 
 
