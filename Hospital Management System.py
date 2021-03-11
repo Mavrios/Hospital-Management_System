@@ -339,7 +339,11 @@ def AddPatient():
 
 def RefreshDoctor():
     global DoctorMenu , AddPatientWindow , DoctorVar
-    if 'Doctor' not in Database[DepartmentVar.get()]:
+    DatabaseFile = open("Database" , "r")
+    Context = DatabaseFile.read()
+    Database = ast.literal_eval(Context)
+    DatabaseFile.close()
+    if not  Database[DepartmentVar.get()]['Doctor']  or 'Doctor' not in Database[DepartmentVar.get()]:
         DoctorName.clear()
         DoctorName.append("There's no available Doctors")
         DoctorMenu.destroy()
@@ -357,7 +361,11 @@ def RefreshDoctor():
 
 def EditRefreshDoctor():
     global EditDoctorMenu , AddPatientWindow , EditDoctorVar
-    if  not  Database[EditDepartmentVar.get()]['Doctor']:
+    DatabaseFile = open("Database" , "r")
+    Context = DatabaseFile.read()
+    Database = ast.literal_eval(Context)
+    DatabaseFile.close()
+    if  not  Database[EditDepartmentVar.get()]['Doctor']  or 'Doctor' not in Database[EditDepartmentVar.get()]:
         DoctorName.clear()
         DoctorName.append("There's no available Doctors")
         EditDoctorMenu.destroy()
@@ -612,6 +620,12 @@ def DeletePatient():
 def DelPatientDict():
     global IDFile,ReservedID,ReservedIdstriped,DelIDEntry,flag,Index,Database,Key,DatabaseFile ,DelPatientWindow,DeletedID,DeletedIDstriped
     Key = ""
+
+    DatabaseFile = open("Database" , "r")
+    Context = DatabaseFile.read()
+    Database = ast.literal_eval(Context)
+    DatabaseFile.close()
+
     IDFile = open("Reserved ID" , "r")
     ReservedID = IDFile.readlines()
     ReservedIdstriped.clear()
@@ -636,6 +650,7 @@ def DelPatientDict():
         for i in Database.values():
             if flag == 1:
                 break
+            Index = -1
             for n in i['Patients']:
                 Index+=1
                 print("\n\n")
@@ -664,7 +679,7 @@ def ViewPatientData():
     global ViewIDEntry,ViewPatientWindow
     ViewPatientWindow = tkinter.Toplevel(PatientsWindow)
     ViewPatientWindow.geometry("700x500+800+400")
-    ViewPatientWindow.title("Edit Patient")
+    ViewPatientWindow.title("View Patients Data")
     ViewPatientWindow.iconbitmap(r"Icon.ico")
     ViewPatientWindow.configure(background="white")
     Label1 = tkinter.Label(ViewPatientWindow,image = PatientPhoto , width= 800 )
@@ -696,14 +711,23 @@ def ViewAllPatientData():
 
 def PatientData():
     global IDFile , ReservedID , ReservedIdstriped ,ViewIDEntry,ViewPatientWindow
+    DatabaseFile = open("Database" , "r")
+    Context = DatabaseFile.read()
+    Database = ast.literal_eval(Context)
+    DatabaseFile.close()
+
     IDFile = open("Reserved ID" , "r")
     ReservedID = IDFile.readlines()
-    ReservedIdstriped.clear()
     for i in ReservedID:
         ReservedIdstriped.append(i.rstrip())
+    IDFile.close()
+
+    IDFile = open("Deleted ID" , "r")
+    DeletedID = IDFile.readlines()
+    for i in DeletedID:
+        DeletedIDstriped.append(i.rstrip())
 
     IDFile.close()
-    # print(ReservedIdstriped)
 
     if ViewIDEntry.get() not in ReservedIdstriped or ViewIDEntry.get() in DeletedIDstriped :
         PopUpMsg("Invalid Patient ID")
@@ -718,6 +742,7 @@ def PatientData():
         for i in Database.values():
             if flag == 1:
                 break
+            Index = -1
             for n in i['Patients']:
                 Index+=1
                 if ViewIDEntry.get() == n['ID']:
@@ -758,11 +783,11 @@ def ManageDoctors():
     DoctorEditButton.pack()
     DoctorFreeLabel = tkinter.Label(DoctorWindow , text = "\n" , bg = "white")
     DoctorFreeLabel.pack()
-    DoctorDelButton = tkinter.Button(DoctorWindow , text = "Delete Doctor" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 , command= DeletePatient)
+    DoctorDelButton = tkinter.Button(DoctorWindow , text = "Delete Doctor" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 , command= DeleteDoctor)
     DoctorDelButton.pack()
     DoctorFreeLabel = tkinter.Label(DoctorWindow , text = "\n" , bg = "white")
     DoctorFreeLabel.pack()
-    DoctorDisplayButton = tkinter.Button(DoctorWindow , text = "Display Doctor Inforamtion" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 ,command = ViewPatientData)
+    DoctorDisplayButton = tkinter.Button(DoctorWindow , text = "Display Doctor Inforamtion" , bg = "dimgray" , fg = "dodgerblue" , font= "Impact 18" ,width= 30 ,command = ViewDoctorData)
     DoctorDisplayButton.pack()
 
 
@@ -945,7 +970,6 @@ def EditDoctorID():
             PatientEnterButton.place(relx= 0.8 , rely= 0.9, anchor=W)
 
 
-
 def EditDoctorData():
     global DoctorIndex , DoctorDataDict, DoctorInfoWindow , DoctorDict , DeletedID,DeletedIDstriped ,EditDoctorNameEntry  , EditDoctorAddressEntry , EditDoctorPhoneEntry,EditDoctorIDSpinBox,IDFile,DatabaseFile ,AddDoctorWindow ,EditDoctorDepartmentVar,IDFile,DeletedID,DeletedIDstriped
     # print(AgeSpinbox.get())
@@ -990,6 +1014,165 @@ def EditDoctorData():
         DoctorInfoWindow.destroy()
         PopUpMsg("Doctor Data has been saved")
         
+
+def DeleteDoctor():
+    global DoctorDelIDEntry ,DelDoctorWindow
+    DelDoctorWindow = tkinter.Toplevel(DoctorWindow)
+    DelDoctorWindow.geometry("700x500+800+400")
+    DelDoctorWindow.title("Edit Doctor")
+    DelDoctorWindow.iconbitmap(r"Icon.ico")
+    DelDoctorWindow.configure(background="white")
+    Label1 = tkinter.Label(DelDoctorWindow,image = DoctorPhoto , width= 800 )
+    Label1.place(relx=0.5,anchor=N )
+    IDlabel = tkinter.Label(DelDoctorWindow , text= "Enter Doctor ID" , bg="white" , fg = "dodgerblue" ,font="Impact 18")
+    IDlabel.place(relx=0.01,rely=0.5,anchor=W)
+    DoctorDelIDEntry = tkinter.Entry(DelDoctorWindow , bg="dimgray" , fg="dodgerblue" , font = "Impact 18")
+    DoctorDelIDEntry.place(relx=0.3,rely=0.5,anchor=W , width= 300 , height= 30)
+    NextButton = tkinter.Button(DelDoctorWindow , text = "Confirm" , bg="dimgray" , fg="dodgerblue" , font = "Impact 16", command= DelDoctorDict)
+    NextButton.place(relx= 0.75, rely= 0.5 , anchor=W , width= 100)
+
+
+def DelDoctorDict():
+    global IDFile,ReservedID,ReservedIdstriped,DoctorDelIDEntry,flag,Index,Database,Key,DatabaseFile ,DelPatientWindow,DeletedID,DeletedIDstriped,DelDoctorWindow
+
+    DatabaseFile = open("Database" , "r")
+    Context = DatabaseFile.read()
+    Database = ast.literal_eval(Context)
+    DatabaseFile.close()
+
+    Key = ""
+    IDFile = open("Reserved ID" , "r")
+    ReservedID = IDFile.readlines()
+    ReservedIdstriped.clear()
+    for i in ReservedID:
+        ReservedIdstriped.append(i.rstrip())
+
+    IDFile.close()
+
+    IDFile = open("Deleted ID" , "r")
+    DeletedID = IDFile.readlines()
+    for i in DeletedID:
+        DeletedIDstriped.append(i.rstrip())
+
+    IDFile.close()
+
+    if DoctorDelIDEntry.get() not in ReservedIdstriped or DoctorDelIDEntry.get() in DeletedIDstriped :
+        PopUpMsg("Invalid Patient ID")
+
+    else:
+        flag = 0
+        Index = -1
+        for i in Database.values():
+            if flag == 1:
+                break
+            Index = -1
+            for n in i['Doctor']:
+                Index+=1
+                print("\n\n")
+                if DoctorDelIDEntry.get() == n['ID']:
+                    flag = 1
+                    Key = n['Department']
+                    print(Key)
+                    break
+
+        Database[Key]['Doctor'].pop(Index)               
+        ReservedIdstriped.remove(DoctorDelIDEntry.get())
+        IDFile = open("Reserved ID" , "w")
+        for i in ReservedIdstriped:
+            IDFile.write(i+"\n")
+        IDFile.close()
+        IDFile = open("Deleted ID","a")
+        IDFile.write("\n" + DoctorDelIDEntry.get())
+        IDFile.close()
+        DatabaseFile = open("Database" , "w")
+        DatabaseFile.write(json.dumps(Database))
+        DatabaseFile.close()
+        DelDoctorWindow.destroy()
+        PopUpMsg("Doctor has been successfully deleted")
+
+def ViewDoctorData():
+    global DoctorViewIDEntry,ViewDoctorWindow
+    ViewDoctorWindow = tkinter.Toplevel(DoctorWindow)
+    ViewDoctorWindow.geometry("700x500+800+400")
+    ViewDoctorWindow.title("View Doctor Data")
+    ViewDoctorWindow.iconbitmap(r"Icon.ico")
+    ViewDoctorWindow.configure(background="white")
+    Label1 = tkinter.Label(ViewDoctorWindow,image = DoctorPhoto , width= 800 )
+    Label1.place(relx=0.5,anchor=N )
+    ViewIDlabel = tkinter.Label(ViewDoctorWindow , text= "Enter Doctor ID" , bg="white" , fg = "dodgerblue" ,font="Impact 18")
+    ViewIDlabel.place(relx=0.01,rely=0.5,anchor=W)
+    DoctorViewIDEntry = tkinter.Entry(ViewDoctorWindow , bg="dimgray" , fg="dodgerblue" , font = "Impact 18")
+    DoctorViewIDEntry.place(relx=0.3,rely=0.5,anchor=W , width= 300 , height= 30)
+    ViewNextButton = tkinter.Button(ViewDoctorWindow , text = "NEXT" , bg="dimgray" , fg="dodgerblue" , font = "Impact 16", command= DoctorData)
+    ViewNextButton.place(relx= 0.75, rely= 0.5 , anchor=W , width= 100)
+    ViewAllDoctorButton = tkinter.Button(ViewDoctorWindow , text="View All Doctors" , bg ="dimgray" ,fg="dodgerblue" ,font = "impact 16", command = ViewAllDoctorData)
+    ViewAllDoctorButton.place(relx = 0.3 , rely= 0.8 , anchor= W , width= 300 )
+
+
+def DoctorData():
+    global IDFile , ReservedID , ReservedIdstriped ,DoctorViewIDEntry,ViewDoctorWindow
+
+    DatabaseFile = open("Database" , "r")
+    Context = DatabaseFile.read()
+    Database = ast.literal_eval(Context)
+    DatabaseFile.close()
+
+    IDFile = open("Reserved ID" , "r")
+    ReservedID = IDFile.readlines()
+    for i in ReservedID:
+        ReservedIdstriped.append(i.rstrip())
+    IDFile.close()
+
+    IDFile = open("Deleted ID" , "r")
+    DeletedID = IDFile.readlines()
+    for i in DeletedID:
+        DeletedIDstriped.append(i.rstrip())
+
+    IDFile.close()
+    # print(ReservedIdstriped)
+
+    if DoctorViewIDEntry.get() not in ReservedIdstriped or DoctorViewIDEntry.get() in DeletedIDstriped :
+        PopUpMsg("Invalid Doctor ID")
+
+    else:
+        DoctorInfoWindow = tkinter.Tk()
+        DoctorInfoWindow.geometry("+150+290")
+        DoctorInfoWindow.iconbitmap(r"Icon.ico")
+        DoctorInfoWindow.title("Doctor Information")
+        flag = 0
+        Index = -1
+        for i in Database.values():
+            if flag == 1:
+                break
+            Index = -1
+            for n in i['Doctor']:
+                Index+=1
+                if DoctorViewIDEntry.get() == n['ID']:
+                    DoctorDataDict = n
+                    print(DoctorDataDict)
+                    flag = 1
+                    break
+
+        DoctorInfo = tkinter.Label(DoctorInfoWindow,text = DoctorDataDict ,bg="white" , fg ="red" , font = "Impact 15")
+        DoctorInfo.pack()
+        ViewDoctorWindow.destroy()    
+
+def ViewAllDoctorData():
+    global ViewDoctorWindow
+    ViewDoctorWindow.destroy()    
+    DoctorInfoWindow = tkinter.Tk()
+    DoctorInfoWindow.geometry("+150+290")
+    DoctorInfoWindow.iconbitmap(r"Icon.ico")
+    DoctorInfoWindow.title("Doctor Information")
+    flag = 0
+    for i in Database.values():
+        for n in i['Doctor']:
+            DoctorDataDict = n
+            DoctorInfo = tkinter.Label(DoctorInfoWindow,text = DoctorDataDict ,bg="white" , fg ="red" , font = "Impact 15")
+            DoctorInfo.pack(pady=10)
+  
+
+
 
 
 root = tkinter.Tk()
